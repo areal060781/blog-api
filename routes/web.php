@@ -66,10 +66,10 @@ $api->version('v1', [
 
     });
 
-    /*$api->get('posts', 'PostController@index');
+    $api->get('posts', 'PostController@index');
     $api->get('posts/{id}', 'PostController@show');
     $api->get('posts/{id}/comments', 'CommentController@index');
-    $api->get('comments/{id}', 'CommentController@show');*/
+    $api->get('comments/{id}', 'CommentController@show');
     $api->post('/auth/register', [
         'as' => 'api.Auth.register',
         'uses' => 'Auth\AuthController@register'

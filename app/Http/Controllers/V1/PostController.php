@@ -7,14 +7,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use Dingo\Api\Routing\Helpers;
+use App\Transformers\PostTransformer;
 
 class PostController extends Controller
 {
     use Helpers;
 
-    public function __construct(Post $post)
+    public function __construct(Post $post, PostTransformer $transformer)
     {
         $this->post = $post;
+        $this->transformer = $transformer;
     }
 
     /**
@@ -22,10 +24,10 @@ class PostController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $posts = $this->post->paginate(20);
-        return $posts;
+        return $this->response->paginator($posts, $this->transformer);
     }
 
     /**
@@ -54,9 +56,8 @@ class PostController extends Controller
             );
         }
         $post = $this->post->create($input);
-        return [
-            'data' => $post
-        ];
+
+        return $this->response->item($post, $this->transformer);
     }
 
     /**
@@ -67,7 +68,12 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        return $this->post->find($id);
+        $post = $this->post->find($id);
+
+        if (!$post) {
+            abort(404);
+        }
+        return $this->response->item($post, $this->transformer);
     }
 
     /**
@@ -94,7 +100,8 @@ class PostController extends Controller
         }
         $post->fill($input);
         $post->save();
-        return $post;
+
+        return $this->response->item($post, $this->transformer);
     }
 
     /**
@@ -106,9 +113,11 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = $this->post->find($id);
+
         if (!$post) {
             abort(404);
         }
+
         if ($this->user->id != $post->user_id) {
             return new JsonResponse(
                 [
@@ -116,7 +125,9 @@ class PostController extends Controller
                 ], Response::HTTP_FORBIDDEN
             );
         }
+
         $post->delete();
+
         return ['message' => 'deleted successfully', 'post_id' => $id];
     }
 }
