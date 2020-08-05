@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
@@ -26,6 +26,9 @@ $app = new Laravel\Lumen\Application(
 $app->withFacades();
 
 $app->withEloquent();
+
+//$app->alias('cache', 'Illuminate\Cache\CacheManager');
+//$app->alias('auth', 'Illuminate\Auth\AuthManager');
 
 /*
 |--------------------------------------------------------------------------
@@ -76,9 +79,13 @@ $app->configure('app');
 //     App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+]);
+
+$app->routeMiddleware([
+    'jwt.verify' => App\Http\Middleware\JwtMiddleware::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -91,9 +98,26 @@ $app->configure('app');
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+//$app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
+//$app->register(App\Providers\EventServiceProvider::class);
+
+
+$app->register(Dingo\Api\Provider\LumenServiceProvider::class);
+
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(Chuckrincon\LumenConfigDiscover\DiscoverServiceProvider::class);
+
+if ($app->environment() !== 'production') {
+    $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+}
+
+class_alias('Tymon\JWTAuth\Facades\JWTAuth', 'JWTAuth');
+class_alias('Tymon\JWTAuth\Facades\JWTFactory', 'JWTFactory');
+
+/*app('Dingo\Api\Auth\Auth')->extend('jwt', function ($app) {
+    return new Dingo\Api\Auth\Provider\JWT($app['Tymon\JWTAuth\JWTAuth']);
+});*/
 
 /*
 |--------------------------------------------------------------------------
@@ -109,7 +133,7 @@ $app->configure('app');
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
 ], function ($router) {
-    require __DIR__.'/../routes/web.php';
+    require __DIR__ . '/../routes/web.php';
 });
 
 return $app;
