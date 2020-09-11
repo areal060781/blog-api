@@ -37,10 +37,16 @@ class CommentController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $id)
     {
         $input = $request->all();
         $input['user_id'] = $this->user->id;
+
+        $post = Post::find($id);
+        if (!$post) {
+            abort(404);
+        }
+        $input['post_id'] = $post->id;
 
         $validationRules = [
             'comment' => 'required|min:1',
@@ -50,10 +56,10 @@ class CommentController extends Controller
 
         $validator = Validator::make($input, $validationRules);
         if ($validator->fails()) {
-            return new JsonResponse(
+            return new \Illuminate\Http\JsonResponse(
                 [
                     'errors' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST
+                ], \Illuminate\Http\Response::HTTP_BAD_REQUEST
             );
         }
 

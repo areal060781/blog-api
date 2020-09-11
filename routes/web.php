@@ -31,7 +31,7 @@ $api->version('v1', [
         $api->get('closed', 'DataController@closed');
     });*/
 
-    //This section implement Dingo Auth middleware
+    // This section implement Dingo Auth middleware
     $api->group(['middleware' => 'api.auth'], function ($api) {
         //Posts protected routes
         $api->resource('posts', "PostController", [
@@ -39,10 +39,10 @@ $api->version('v1', [
         ]);
 
         //Comments protected routes
-        /*$api->resource('comments', "CommentController", [
+        $api->resource('comments', "CommentController", [
             'except' => ['show', 'index']
         ]);
-        $api->post('posts/{id}/comments', 'CommentController@store');*/
+        //$api->post('posts/{id}/comments', 'CommentController@store');
 
         // User info
         $api->post('me', [
